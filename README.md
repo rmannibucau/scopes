@@ -1,13 +1,13 @@
-= Scopes
+# Scopes
 
-== Method Scope
+## Method Scope
 
 Method scope provides a way to control the activation/deactivation of a scope
 with an annotation. All CDI `Bean<?>` scoped with `@MethodScoped` in this context will use the same instance.
 
-=== Activation of the scope:
+### Activation of the scope:
 
-==== Declaratively
+#### Declaratively
 
 ```java
 @WithScope
@@ -16,7 +16,7 @@ public void methodWithMethodScopedActivate() {
 }
 ```
 
-==== Programmatically
+#### Programmatically
 
 ```java
 @Inject
@@ -27,7 +27,7 @@ public void inScope() {
 }
 ```
 
-=== Usage of the scope
+### Usage of the scope
 
 Just use `@MethodScoped`:
 
@@ -39,7 +39,7 @@ public Foo foo() {
 }
 ````
 
-=== Use case
+### Use case
 
 Common use case for such a scope is to scope a resource and ensure thanks to CDI to release
 resources.
