@@ -30,90 +30,14 @@ public class MethodScopeExtension implements Extension {
 
     void addContext(@Observes final AfterBeanDiscovery afterBeanDiscovery) {
         afterBeanDiscovery.addContext(methodContext);
-
-        afterBeanDiscovery.addBean(new Interceptor<Object>() { // fake an interceptor but impl is in intercept()
-            public final Set<Type> types = singleton(Object.class);
-            public final Set<Annotation> bindings = singleton(new WithScope() {
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return WithScope.class;
-                }
-            });
-
-            @Override
-            public Set<Annotation> getInterceptorBindings() {
-                return bindings;
-            }
-
-            @Override
-            public boolean intercepts(final InterceptionType type) {
-                return type == InterceptionType.AROUND_INVOKE;
-            }
-
-            @Override
-            public Object intercept(final InterceptionType type, final Object instance, final InvocationContext ctx) throws Exception {
-                return methodContext.execute(ctx::proceed);
-            }
-
-            @Override
-            public Set<InjectionPoint> getInjectionPoints() {
-                return emptySet();
-            }
-
-            @Override
-            public Class<?> getBeanClass() {
-                return Object.class;
-            }
-
-            @Override
-            public boolean isNullable() {
-                return false;
-            }
-
-            @Override
-            public Set<Type> getTypes() {
-                return types;
-            }
-
-            @Override
-            public Set<Annotation> getQualifiers() {
-                return emptySet();
-            }
-
-            @Override
-            public Class<? extends Annotation> getScope() {
-                return Dependent.class;
-            }
-
-            @Override
-            public String getName() {
-                return null;
-            }
-
-            @Override
-            public Set<Class<? extends Annotation>> getStereotypes() {
-                return emptySet();
-            }
-
-            @Override
-            public boolean isAlternative() {
-                return false;
-            }
-
-            @Override
-            public Object create(final CreationalContext<Object> context) {
-                return this; // ignored anyway
-            }
-
-            @Override
-            public void destroy(final Object instance, final CreationalContext<Object> context) {
-                // no-op
-            }
-        });
+        afterBeanDiscovery.addBean(new ScopeActivatorInterceptor(methodContext));
     }
 
     public void executeInScope(final Runnable runnable) {
-        executeInScope(() -> { runnable.run(); return null; });
+        executeInScope(() -> {
+            runnable.run();
+            return null;
+        });
     }
 
     public <T> T executeInScope(final Supplier<T> task) {
@@ -121,6 +45,91 @@ public class MethodScopeExtension implements Extension {
             return (T) methodContext.execute(() -> task.get());
         } catch (final Exception e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    private static class ScopeActivatorInterceptor implements Interceptor<Object> {
+        private final MethodContext methodContext;
+        private final Set<Type> types = singleton(Object.class);
+        private final Set<Annotation> bindings = singleton(new WithScope() {
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return WithScope.class;
+            }
+        });
+
+        private ScopeActivatorInterceptor(final MethodContext methodContext) {
+            this.methodContext = methodContext;
+        }
+
+        @Override
+        public Set<Annotation> getInterceptorBindings() {
+            return bindings;
+        }
+
+        @Override
+        public boolean intercepts(final InterceptionType type) {
+            return type == InterceptionType.AROUND_INVOKE;
+        }
+
+        @Override
+        public Object intercept(final InterceptionType type, final Object instance, final InvocationContext ctx) throws Exception {
+            return methodContext.execute(ctx::proceed);
+        }
+
+        @Override
+        public Set<InjectionPoint> getInjectionPoints() {
+            return emptySet();
+        }
+
+        @Override
+        public Class<?> getBeanClass() {
+            return Object.class;
+        }
+
+        @Override
+        public boolean isNullable() {
+            return false;
+        }
+
+        @Override
+        public Set<Type> getTypes() {
+            return types;
+        }
+
+        @Override
+        public Set<Annotation> getQualifiers() {
+            return emptySet();
+        }
+
+        @Override
+        public Class<? extends Annotation> getScope() {
+            return Dependent.class;
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        public Set<Class<? extends Annotation>> getStereotypes() {
+            return emptySet();
+        }
+
+        @Override
+        public boolean isAlternative() {
+            return false;
+        }
+
+        @Override
+        public Object create(final CreationalContext<Object> context) {
+            return this; // ignored anyway
+        }
+
+        @Override
+        public void destroy(final Object instance, final CreationalContext<Object> context) {
+            // no-op
         }
     }
 }

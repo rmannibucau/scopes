@@ -3,7 +3,7 @@
 ## Method Scope
 
 Method scope provides a way to control the activation/deactivation of a scope
-with an annotation. All CDI `Bean<?>` scoped with `@MethodScoped` in this context will use the same instance.
+with an annotation. All CDI `Bean<?>` scoped with `@WrappingMethodScoped` in this context will use the same instance.
 
 ### Activation of the scope:
 
@@ -11,7 +11,7 @@ with an annotation. All CDI `Bean<?>` scoped with `@MethodScoped` in this contex
 
 ```java
 @WithScope
-public void methodWithMethodScopedActivate() {
+public void methodWithWrappingMethodScopedActivate() {
     // use method scoped beans
 }
 ```
@@ -29,10 +29,10 @@ public void inScope() {
 
 ### Usage of the scope
 
-Just use `@MethodScoped`:
+Just use `@WrappingMethodScoped`:
 
 ````java
-@MethodScoped
+@WrappingMethodScoped
 @Produces
 public Foo foo() {
     // ...
@@ -49,7 +49,7 @@ If you think to a socket connection of a pooled resource this comes obvious, you
 
 ```java
 @Produces
-@MethodScoped
+@WrappingMethodScoped
 public MyScopedConnection connection() { /*...*/ }
 
 public void release(@Disposes MyScopedConnection connection) {
